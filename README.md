@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GradeAssist
 
-## Getting Started
+An AI-powered grading assistant for teachers to efficiently grade papers, manage classes, and track student progress.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Class Management**: Create and manage multiple classes with student rosters
+- **Quick Grade**: Rapidly grade multiple choice assignments with answer keys
+- **Essay Assistant**: AI-powered essay grading with customizable rubrics
+- **Import/Export**: Bulk import students via CSV and export grades
+- **Dashboard**: Track assignments, submissions, and class statistics
+
+## Setup Instructions
+
+### Prerequisites
+
+- Node.js 18+ installed
+- A Supabase account (free tier available at [supabase.com](https://supabase.com))
+
+### Environment Variables
+
+To deploy this application on Vercel, you need to set up the following environment variables:
+
+1. Go to your [Vercel project settings](https://vercel.com/dashboard)
+2. Navigate to Settings → Environment Variables
+3. Add the following variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+You can get these values from your [Supabase project settings](https://supabase.com/dashboard/project/_/settings/api).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Database Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Go to the SQL Editor in your Supabase dashboard
+3. Run the SQL schema from `supabase/schema.sql` to create all necessary tables
+4. Copy your project URL and anon key to use as environment variables
 
-## Learn More
+### Local Development
 
-To learn more about Next.js, take a look at the following resources:
+1. Clone the repository:
+```bash
+git clone https://github.com/Mvula88/gradeassist.git
+cd gradeassist
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
+
+4. Fill in your Supabase credentials in `.env.local`
+
+5. Run the development server:
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy GradeAssist is using Vercel:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Mvula88/gradeassist)
+
+Remember to add your environment variables in the Vercel dashboard after deployment.
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Deployment**: Vercel
+
+## License
+
+MIT
