@@ -125,7 +125,7 @@ export default function EssayAssistantPage() {
       }
     })
 
-    const totalScore = feedback.reduce((sum, f) => sum + f.score, 0)
+    const totalScore = feedback.reduce((sum: number, f) => sum + f.score, 0)
     const confidence = Math.floor(Math.random() * 15) + 85 // 85-100% confidence
 
     return {
