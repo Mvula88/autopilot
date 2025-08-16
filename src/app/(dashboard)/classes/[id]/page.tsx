@@ -47,14 +47,15 @@ async function getStudents(classId: string) {
   return students || []
 }
 
-export default async function ClassDetailPage({ params }: { params: { id: string } }) {
-  const classData = await getClassDetails(params.id)
+export default async function ClassDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const classData = await getClassDetails(id)
   
   if (!classData) {
     notFound()
   }
 
-  const students = await getStudents(params.id)
+  const students = await getStudents(id)
 
   return (
     <div className="space-y-6">
@@ -77,7 +78,7 @@ export default async function ClassDetailPage({ params }: { params: { id: string
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link href={`/classes/${params.id}/edit`}>
+            <Link href={`/classes/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Class
             </Link>
@@ -135,18 +136,18 @@ export default async function ClassDetailPage({ params }: { params: { id: string
             </div>
             <div className="flex gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href={`/classes/${params.id}/import`}>
+                <Link href={`/classes/${id}/import`}>
                   <Upload className="mr-2 h-4 w-4" />
                   Import CSV
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <a href={`/api/classes/${params.id}/export-roster`}>
+                <a href={`/api/classes/${id}/export-roster`}>
                   <Download className="mr-2 h-4 w-4" />
                   Export
                 </a>
               </Button>
-              <AddStudentDialog classId={params.id} />
+              <AddStudentDialog classId={id} />
             </div>
           </div>
         </CardHeader>
@@ -195,9 +196,9 @@ export default async function ClassDetailPage({ params }: { params: { id: string
                 Add students to this class to get started
               </p>
               <div className="flex gap-2">
-                <AddStudentDialog classId={params.id} />
+                <AddStudentDialog classId={id} />
                 <Button asChild variant="outline">
-                  <Link href={`/classes/${params.id}/import`}>
+                  <Link href={`/classes/${id}/import`}>
                     <Upload className="mr-2 h-4 w-4" />
                     Import CSV
                   </Link>

@@ -18,22 +18,25 @@ interface Answer {
   points: number
 }
 
-export default function AnswerKeyPage({ params }: { params: { id: string } }) {
+export default function AnswerKeyPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [assignment, setAssignment] = useState<any>(null)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [numberOfQuestions, setNumberOfQuestions] = useState(10)
+  const [assignmentId, setAssignmentId] = useState<string>('')
 
   useEffect(() => {
     async function fetchAssignment() {
+      const resolvedParams = await params
+      setAssignmentId(resolvedParams.id)
       const supabase = createClient()
       
       const { data: assignmentData, error } = await supabase
         .from('assignments')
         .select('*, classes(*)')
-        .eq('id', params.id)
+        .eq('id', resolvedParams.id)
         .single()
 
       if (error || !assignmentData) {
@@ -52,7 +55,7 @@ export default function AnswerKeyPage({ params }: { params: { id: string } }) {
       const { data: answerKey } = await supabase
         .from('answer_keys')
         .select('*')
-        .eq('assignment_id', params.id)
+        .eq('assignment_id', resolvedParams.id)
         .single()
 
       if (answerKey) {
@@ -72,7 +75,7 @@ export default function AnswerKeyPage({ params }: { params: { id: string } }) {
     }
 
     fetchAssignment()
-  }, [params.id, numberOfQuestions, router, toast])
+  }, [params, numberOfQuestions, router, toast])
 
   const updateAnswer = (index: number, field: 'correct' | 'points', value: string | number) => {
     const newAnswers = [...answers]
@@ -111,7 +114,7 @@ export default function AnswerKeyPage({ params }: { params: { id: string } }) {
       const { data: existingKey } = await supabase
         .from('answer_keys')
         .select('id')
-        .eq('assignment_id', params.id)
+        .eq('assignment_id', assignmentId)
         .single()
 
       if (existingKey) {
@@ -127,7 +130,7 @@ export default function AnswerKeyPage({ params }: { params: { id: string } }) {
         const { error } = await supabase
           .from('answer_keys')
           .insert({
-            assignment_id: params.id,
+            assignment_id: assignmentId,
             answers,
           })
 

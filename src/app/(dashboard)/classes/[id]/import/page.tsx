@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,13 +17,14 @@ interface Student {
   email?: string
 }
 
-export default function ImportCSVPage({ params }: { params: { id: string } }) {
+export default function ImportCSVPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [isImporting, setIsImporting] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
   const [hasHeaders, setHasHeaders] = useState(true)
   const [dragActive, setDragActive] = useState(false)
+  const [classId, setClassId] = useState<string>('')
 
   const processCSV = (text: string) => {
     const lines = text.split('\n').filter(line => line.trim())
@@ -95,6 +96,10 @@ export default function ImportCSVPage({ params }: { params: { id: string } }) {
     setStudents(students.filter((_, i) => i !== index))
   }
 
+  React.useEffect(() => {
+    params.then(p => setClassId(p.id))
+  }, [params])
+
   const handleImport = async () => {
     if (students.length === 0) {
       toast({
@@ -110,7 +115,7 @@ export default function ImportCSVPage({ params }: { params: { id: string } }) {
       const supabase = createClient()
       
       const studentsToInsert = students.map(student => ({
-        class_id: params.id,
+        class_id: classId,
         ...student,
       }))
 
@@ -125,7 +130,7 @@ export default function ImportCSVPage({ params }: { params: { id: string } }) {
         description: `${students.length} students imported successfully`,
       })
 
-      router.push(`/classes/${params.id}`)
+      router.push(`/classes/${classId}`)
       router.refresh()
     } catch (error: any) {
       console.error('Error importing students:', error)
@@ -151,7 +156,7 @@ export default function ImportCSVPage({ params }: { params: { id: string } }) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="icon">
-          <Link href={`/classes/${params.id}`}>
+          <Link href={`/classes/${classId}`}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

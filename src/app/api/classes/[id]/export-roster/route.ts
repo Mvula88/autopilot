@@ -3,9 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = await createClient()
     
     const { data: { user } } = await supabase.auth.getUser()
@@ -18,7 +19,7 @@ export async function GET(
     const { data: classData } = await supabase
       .from('classes')
       .select('name')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('teacher_id', user.id)
       .single()
 
@@ -30,7 +31,7 @@ export async function GET(
     const { data: students } = await supabase
       .from('students')
       .select('*')
-      .eq('class_id', params.id)
+      .eq('class_id', id)
       .order('last_name', { ascending: true })
 
     if (!students || students.length === 0) {

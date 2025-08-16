@@ -63,14 +63,15 @@ async function getSubmissions(assignmentId: string) {
   return submissions || []
 }
 
-export default async function AssignmentDetailPage({ params }: { params: { id: string } }) {
-  const assignment = await getAssignmentDetails(params.id)
+export default async function AssignmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const assignment = await getAssignmentDetails(id)
   
   if (!assignment) {
     notFound()
   }
 
-  const submissions = await getSubmissions(params.id)
+  const submissions = await getSubmissions(id)
 
   const getTypeIcon = (type: string) => {
     switch(type) {
@@ -125,14 +126,14 @@ export default async function AssignmentDetailPage({ params }: { params: { id: s
         <div className="flex gap-2">
           {assignment.type === 'multiple_choice' && !assignment.answer_keys?.length && (
             <Button asChild variant="outline">
-              <Link href={`/assignments/${params.id}/answer-key`}>
+              <Link href={`/assignments/${id}/answer-key`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Set Answer Key
               </Link>
             </Button>
           )}
           <Button asChild variant="outline">
-            <Link href={`/assignments/${params.id}/edit`}>
+            <Link href={`/assignments/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Assignment
             </Link>
@@ -194,14 +195,14 @@ export default async function AssignmentDetailPage({ params }: { params: { id: s
             <div className="flex gap-2">
               {stats.graded > 0 && (
                 <Button asChild variant="outline" size="sm">
-                  <a href={`/api/assignments/${params.id}/export-grades`}>
+                  <a href={`/api/assignments/${id}/export-grades`}>
                     <Download className="mr-2 h-4 w-4" />
                     Export Grades
                   </a>
                 </Button>
               )}
               <Button asChild size="sm">
-                <Link href={`/assignments/${params.id}/grade`}>
+                <Link href={`/assignments/${id}/grade`}>
                   Start Grading
                 </Link>
               </Button>
@@ -253,7 +254,7 @@ export default async function AssignmentDetailPage({ params }: { params: { id: s
                     </TableCell>
                     <TableCell className="text-right">
                       <Button asChild size="sm" variant="ghost">
-                        <Link href={`/assignments/${params.id}/submissions/${submission.id}`}>
+                        <Link href={`/assignments/${id}/submissions/${submission.id}`}>
                           View
                         </Link>
                       </Button>

@@ -23,13 +23,14 @@ const formSchema = z.object({
   academic_year: z.string().min(1, 'Academic year is required'),
 })
 
-export default function EditClassPage({ params }: { params: { id: string } }) {
+export default function EditClassPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [classData, setClassData] = useState<any>(null)
+  const [classId, setClassId] = useState<string>('')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,11 +44,13 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     async function fetchClass() {
+      const resolvedParams = await params
+      setClassId(resolvedParams.id)
       const supabase = createClient()
       const { data, error } = await supabase
         .from('classes')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', resolvedParams.id)
         .single()
 
       if (error) {
@@ -73,7 +76,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
     }
 
     fetchClass()
-  }, [params.id, form, router, toast])
+  }, [params, form, router, toast])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -83,7 +86,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
       const { error } = await supabase
         .from('classes')
         .update(values)
-        .eq('id', params.id)
+        .eq('id', classId)
 
       if (error) throw error
 
@@ -92,7 +95,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
         description: 'Class updated successfully',
       })
 
-      router.push(`/classes/${params.id}`)
+      router.push(`/classes/${classId}`)
       router.refresh()
     } catch (error) {
       console.error('Error updating class:', error)
@@ -114,7 +117,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
       const { error } = await supabase
         .from('classes')
         .delete()
-        .eq('id', params.id)
+        .eq('id', classId)
 
       if (error) throw error
 
@@ -146,7 +149,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="icon">
-          <Link href={`/classes/${params.id}`}>
+          <Link href={`/classes/${classId}`}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -269,7 +272,7 @@ export default function EditClassPage({ params }: { params: { id: string } }) {
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </Button>
                   <Button type="button" variant="outline" asChild>
-                    <Link href={`/classes/${params.id}`}>Cancel</Link>
+                    <Link href={`/classes/${classId}`}>Cancel</Link>
                   </Button>
                 </div>
 
