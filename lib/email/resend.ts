@@ -20,7 +20,7 @@ export async function sendEmail(options: EmailOptions) {
       subject: options.subject,
       html: options.html,
       text: options.text,
-      reply_to: options.replyTo,
+      replyTo: options.replyTo,
       tags: options.tags,
     })
 
