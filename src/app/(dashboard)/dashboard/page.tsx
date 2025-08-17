@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { getTeacherProfile, getTeacherClasses, getRecentCommunications } from '@/lib/supabase/queries'
 import TeacherStats from '@/components/dashboard/teacher-stats'
 import ClassCard from '@/components/dashboard/class-card'
 import RecentActivity from '@/components/dashboard/recent-activity'
@@ -14,23 +13,34 @@ export default async function DashboardPage() {
   
   if (!user) return null
 
-  const [profile, classes, communications] = await Promise.all([
-    getTeacherProfile(user.id),
-    getTeacherClasses(user.id),
-    getRecentCommunications(user.id, 5)
-  ])
+  // Get teacher profile
+  const { data: teacherProfile } = await supabase
+    .from('teachers')
+    .select('*')
+    .eq('id', user.id)
+    .single()
 
-  const teacherProfile = profile.data
-  const teacherClasses = classes.data || []
-  const recentComms = communications.data || []
+  // Get teacher classes with student count
+  const { data: teacherClasses } = await supabase
+    .from('classes')
+    .select('*, students(count)')
+    .eq('teacher_id', user.id)
+
+  // Get recent communications
+  const { data: recentComms } = await supabase
+    .from('communications')
+    .select('*')
+    .eq('teacher_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
 
   // Calculate stats
-  const totalStudents = teacherClasses.reduce((sum, cls) => 
+  const totalStudents = teacherClasses?.reduce((sum, cls) => 
     sum + (cls.students?.[0]?.count || 0), 0
-  )
-  const weeklyDigestsSent = recentComms.filter(c => 
+  ) || 0
+  const weeklyDigestsSent = recentComms?.filter(c => 
     c.type === 'weekly_digest' && c.status === 'sent'
-  ).length
+  ).length || 0
   const avgEngagement = 75 // This would be calculated from real engagement data
 
   return (
@@ -65,7 +75,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          {teacherClasses.length === 0 ? (
+          {!teacherClasses || teacherClasses.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
               <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6 text-gray-400" />
@@ -91,7 +101,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <RecentActivity communications={recentComms} />
+          <RecentActivity communications={recentComms || []} />
         </div>
       </div>
     </div>
