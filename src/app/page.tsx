@@ -510,7 +510,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <Card className="hover:scale-105 transition-transform duration-300">
               <CardHeader>
-                <CardTitle>Free</CardTitle>
+                <CardTitle>Free Forever</CardTitle>
                 <div className="text-3xl font-bold mt-4">$0</div>
                 <CardDescription>Perfect for trying out</CardDescription>
               </CardHeader>
@@ -518,7 +518,11 @@ export default function LandingPage() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Up to 10 students
+                    Up to 5 students
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Magic Message generator
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -527,6 +531,10 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     Basic analytics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    IEP/504 templates
                   </li>
                 </ul>
               </CardContent>
@@ -539,9 +547,13 @@ export default function LandingPage() {
                 </Badge>
               </div>
               <CardHeader>
-                <CardTitle>Pro</CardTitle>
-                <div className="text-3xl font-bold mt-4">$9/mo</div>
-                <CardDescription>For active teachers</CardDescription>
+                <CardTitle>Teacher Pro</CardTitle>
+                <div className="space-y-1 mt-4">
+                  <div className="text-3xl font-bold">$4.99/mo</div>
+                  <div className="text-sm text-gray-500 line-through">$9.99/mo</div>
+                  <Badge className="bg-green-100 text-green-700">Save 50% with annual</Badge>
+                </div>
+                <CardDescription>For full classroom</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm">
@@ -551,25 +563,36 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    All communication types
+                    All Magic Message types
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Advanced analytics
+                    Advanced parent analytics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    IEP/504 compliance suite
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     Priority support
                   </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    ROI dashboard for admin
+                  </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="hover:scale-105 transition-transform duration-300">
+            <Card className="hover:scale-105 transition-transform duration-300 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
               <CardHeader>
-                <CardTitle>School</CardTitle>
-                <div className="text-3xl font-bold mt-4">Custom</div>
-                <CardDescription>For entire schools</CardDescription>
+                <CardTitle>School License</CardTitle>
+                <div className="space-y-1 mt-4">
+                  <div className="text-2xl font-bold">$199/mo</div>
+                  <Badge className="bg-purple-100 text-purple-700">Per school</Badge>
+                </div>
+                <CardDescription>Best value for schools</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm">
@@ -579,7 +602,11 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Admin dashboard
+                    Admin oversight dashboard
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    School-wide analytics
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -587,7 +614,11 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Dedicated support
+                    Professional development
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Dedicated success manager
                   </li>
                 </ul>
               </CardContent>

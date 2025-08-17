@@ -3,6 +3,7 @@ import TeacherStats from '@/components/dashboard/teacher-stats'
 import ClassCard from '@/components/dashboard/class-card'
 import RecentActivity from '@/components/dashboard/recent-activity'
 import QuickActions from '@/components/dashboard/quick-actions'
+import MagicMessage from '@/components/dashboard/magic-message'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +20,9 @@ import {
   Sparkles,
   Activity,
   BookOpen,
-  Bell
+  Bell,
+  BarChart3,
+  CheckCircle
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -135,7 +138,7 @@ export default async function DashboardPage() {
             <Sparkles className="h-5 w-5 text-yellow-500" />
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link href="/digest">
               <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-blue-200">
                 <CardContent className="p-6">
@@ -162,6 +165,21 @@ export default async function DashboardPage() {
                   </div>
                   <h3 className="font-semibold text-gray-900">Quick Note</h3>
                   <p className="text-sm text-gray-600 mt-1">Send instant update</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/analytics">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-yellow-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-12 w-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="h-6 w-6 text-white" />
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Analytics</h3>
+                  <p className="text-sm text-gray-600 mt-1">Engagement metrics</p>
                 </CardContent>
               </Card>
             </Link>
@@ -195,6 +213,54 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
             </Link>
+          </div>
+        </div>
+
+        {/* Magic Message Section */}
+        <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <MagicMessage />
+          </div>
+          <div className="lg:col-span-2">
+            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Badge className="bg-yellow-100 text-yellow-700">NEW</Badge>
+                  IEP/504 Compliance Templates
+                </CardTitle>
+                <CardDescription>
+                  Pre-approved templates that ensure compliance with special education requirements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Progress Update</span>
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Goal Achievement</span>
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Accommodation Review</span>
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Quarterly Report</span>
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Meeting Request</span>
+                  </Button>
+                  <Button variant="outline" className="justify-start">
+                    <span className="text-xs">Support Strategies</span>
+                  </Button>
+                </div>
+                <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                  <p className="text-xs text-blue-700 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    All templates reviewed by special education coordinators
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 

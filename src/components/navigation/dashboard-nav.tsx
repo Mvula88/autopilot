@@ -23,7 +23,8 @@ import {
   FileText,
   Bell,
   Mail,
-  StickyNote
+  StickyNote,
+  BarChart3
 } from 'lucide-react'
 
 const navigation = [
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Classes', href: '/classes', icon: Users },
   { name: 'Quick Notes', href: '/notes', icon: StickyNote },
   { name: 'Weekly Digest', href: '/digest', icon: Mail },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Communications', href: '/communications', icon: Send },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
