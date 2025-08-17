@@ -92,11 +92,19 @@ export default function DigestPage() {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
+      // Get classes for this teacher
+      const { data: classes } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('teacher_id', user.id)
+      
+      const classIds = classes?.map(c => c.id) || []
+      
       // Get student count
       const { count: studentCount } = await supabase
         .from('students')
         .select('*', { count: 'exact', head: true })
-        .eq('class_id', 'IN', `(SELECT id FROM classes WHERE teacher_id = '${user.id}')`)
+        .in('class_id', classIds)
 
       // Get parent count
       const { count: parentCount } = await supabase
@@ -232,7 +240,7 @@ export default function DigestPage() {
             student.attendance_rate 
               ? `${student.attendance_rate}% attendance`
               : null
-          ].filter(Boolean),
+          ].filter(Boolean) as string[],
           grades: student.current_grades || {},
           notes: studentNotes.slice(0, 3)
         }
