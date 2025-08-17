@@ -1,20 +1,26 @@
-import { Sidebar } from '@/components/navigation/sidebar'
-import { Toaster } from '@/components/ui/toaster'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import DashboardNav from '@/components/navigation/dashboard-nav'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/login')
+  }
+
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-6 py-8 lg:px-10">
-          {children}
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <DashboardNav />
+      <main className="pt-16">
+        {children}
       </main>
-      <Toaster />
     </div>
   )
 }

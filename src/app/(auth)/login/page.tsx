@@ -7,24 +7,23 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, GraduationCap } from 'lucide-react'
+import { GraduationCap, Mail, Lock, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const supabase = createClient()
+  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -38,80 +37,106 @@ export default function LoginPage() {
       } else {
         toast({
           title: 'Welcome back!',
-          description: 'Successfully logged in.',
+          description: 'Redirecting to your dashboard...',
         })
         router.push('/dashboard')
-        router.refresh()
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred.',
+        description: 'An unexpected error occurred',
         variant: 'destructive',
       })
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <GraduationCap className="h-12 w-12 text-primary" />
+    <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
+          <GraduationCap className="w-8 h-8 text-indigo-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+        <p className="text-gray-600 mt-2">Sign in to Parent Communication Autopilot</p>
+      </div>
+
+      <form onSubmit={handleLogin} className="space-y-6">
+        <div>
+          <Label htmlFor="email">Email Address</Label>
+          <div className="relative mt-1">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="teacher@school.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10"
+              required
+              disabled={loading}
+            />
           </div>
-          <CardTitle className="text-2xl text-center">Welcome to GradeAssist</CardTitle>
-          <CardDescription className="text-center">
-            Enter your email and password to sign in
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="teacher@school.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <div className="text-sm text-muted-foreground text-center">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-primary hover:underline">
-              Sign up
-            </Link>
+        </div>
+
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <div className="relative mt-1">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pl-10"
+              required
+              disabled={loading}
+            />
           </div>
-        </CardFooter>
-      </Card>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input type="checkbox" className="rounded border-gray-300" />
+            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+          </label>
+          <Link href="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-500">
+            Forgot password?
+          </Link>
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing in...
+            </>
+          ) : (
+            'Sign In'
+          )}
+        </Button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-600">
+          Don't have an account?{' '}
+          <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign up for free
+          </Link>
+        </p>
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <p className="text-xs text-center text-gray-500">
+          Save 5+ hours weekly on parent communication
+        </p>
+      </div>
     </div>
   )
 }

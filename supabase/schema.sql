@@ -1,14 +1,20 @@
--- GradeAssist Database Schema
+-- Parent Communication Autopilot Database Schema
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Teachers table
 CREATE TABLE teachers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT auth.uid(),
   email TEXT UNIQUE NOT NULL,
-  full_name TEXT,
+  full_name TEXT NOT NULL,
   school_name TEXT,
+  grade_level TEXT,
+  subjects TEXT[],
+  timezone TEXT DEFAULT 'America/New_York',
+  digest_day TEXT DEFAULT 'friday',
+  digest_time TIME DEFAULT '15:00',
+  subscription_tier TEXT DEFAULT 'free',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -17,9 +23,10 @@ CREATE TABLE classes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id UUID REFERENCES teachers(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  subject TEXT,
+  academic_year TEXT DEFAULT '2024-2025',
   grade_level TEXT,
-  academic_year TEXT,
+  subject TEXT,
+  active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -27,124 +34,110 @@ CREATE TABLE classes (
 CREATE TABLE students (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   class_id UUID REFERENCES classes(id) ON DELETE CASCADE,
-  student_id TEXT, -- School-provided ID
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
+  student_id TEXT,
   email TEXT,
+  current_grades JSONB DEFAULT '{}',
+  grade_history JSONB[] DEFAULT ARRAY[]::JSONB[],
+  attendance_rate DECIMAL(5,2),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(class_id, student_id)
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Rubrics table
-CREATE TABLE rubrics (
+-- Parents table
+CREATE TABLE parents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT,
+  full_name TEXT,
+  preferred_language TEXT DEFAULT 'en',
+  communication_preference TEXT DEFAULT 'email',
+  timezone TEXT DEFAULT 'America/New_York',
+  subscription_tier TEXT DEFAULT 'free',
+  last_opened_at TIMESTAMPTZ,
+  engagement_score INTEGER DEFAULT 50,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Student-Parent relationship
+CREATE TABLE student_parents (
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  parent_id UUID REFERENCES parents(id) ON DELETE CASCADE,
+  relationship TEXT DEFAULT 'parent',
+  is_primary BOOLEAN DEFAULT false,
+  receive_updates BOOLEAN DEFAULT true,
+  PRIMARY KEY (student_id, parent_id)
+);
+
+-- Communications/emails sent
+CREATE TABLE communications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type TEXT NOT NULL CHECK (type IN ('weekly_digest', 'quick_note', 'alert')),
+  teacher_id UUID REFERENCES teachers(id),
+  student_id UUID REFERENCES students(id),
+  parent_id UUID REFERENCES parents(id),
+  subject TEXT NOT NULL,
+  content_html TEXT NOT NULL,
+  content_plain TEXT NOT NULL,
+  language TEXT DEFAULT 'en',
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'scheduled', 'sent', 'failed')),
+  sent_at TIMESTAMPTZ,
+  opened_at TIMESTAMPTZ,
+  clicked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Quick notes from teachers
+CREATE TABLE quick_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id UUID REFERENCES teachers(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  type TEXT CHECK (type IN ('essay', 'short_answer')),
-  criteria JSONB NOT NULL, -- Stores rubric categories and point values
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('positive', 'concern', 'info')),
+  category TEXT,
+  message TEXT NOT NULL,
+  sent_to_parents BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Assignments table
-CREATE TABLE assignments (
+-- Grade imports tracking
+CREATE TABLE grade_imports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   class_id UUID REFERENCES classes(id) ON DELETE CASCADE,
-  rubric_id UUID REFERENCES rubrics(id),
-  title TEXT NOT NULL,
-  type TEXT CHECK (type IN ('multiple_choice', 'short_answer', 'essay')),
-  total_points INTEGER,
-  due_date DATE,
+  file_name TEXT,
+  import_data JSONB,
+  processed_count INTEGER DEFAULT 0,
+  error_count INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Submissions table
-CREATE TABLE submissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
-  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
-  image_urls TEXT[], -- Array of uploaded image URLs
-  ocr_text TEXT,
-  ai_grade JSONB, -- Stores AI grading details
-  ai_confidence JSONB, -- Confidence scores for each criterion
-  final_grade DECIMAL(5,2),
-  teacher_comments TEXT,
-  status TEXT CHECK (status IN ('pending', 'ai_graded', 'reviewed', 'finalized')),
-  graded_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Answer keys for objective questions
-CREATE TABLE answer_keys (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  assignment_id UUID REFERENCES assignments(id) ON DELETE CASCADE,
-  answers JSONB NOT NULL, -- Stores correct answers
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Row Level Security (RLS) Policies
-
--- Enable RLS on all tables
+-- Enable Row Level Security
 ALTER TABLE teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rubrics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE answer_keys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quick_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communications ENABLE ROW LEVEL SECURITY;
 
--- Teachers can only see their own data
-CREATE POLICY "Teachers can view own profile" ON teachers
+-- Create policies for teachers to only see their own data
+CREATE POLICY "Teachers can manage own profile" ON teachers
   FOR ALL USING (auth.uid() = id);
 
--- Teachers can manage their own classes
 CREATE POLICY "Teachers can manage own classes" ON classes
   FOR ALL USING (teacher_id = auth.uid());
 
--- Teachers can manage students in their classes
-CREATE POLICY "Teachers can manage students in own classes" ON students
-  FOR ALL USING (
-    class_id IN (
-      SELECT id FROM classes WHERE teacher_id = auth.uid()
-    )
-  );
+CREATE POLICY "Teachers can manage students in their classes" ON students
+  FOR ALL USING (class_id IN (
+    SELECT id FROM classes WHERE teacher_id = auth.uid()
+  ));
 
--- Teachers can manage their own rubrics
-CREATE POLICY "Teachers can manage own rubrics" ON rubrics
+CREATE POLICY "Teachers can manage own quick notes" ON quick_notes
   FOR ALL USING (teacher_id = auth.uid());
 
--- Teachers can manage assignments for their classes
-CREATE POLICY "Teachers can manage assignments for own classes" ON assignments
-  FOR ALL USING (
-    class_id IN (
-      SELECT id FROM classes WHERE teacher_id = auth.uid()
-    )
-  );
+CREATE POLICY "Teachers can view own communications" ON communications
+  FOR SELECT USING (teacher_id = auth.uid());
 
--- Teachers can manage submissions for their assignments
-CREATE POLICY "Teachers can manage submissions for own assignments" ON submissions
-  FOR ALL USING (
-    assignment_id IN (
-      SELECT a.id FROM assignments a
-      JOIN classes c ON a.class_id = c.id
-      WHERE c.teacher_id = auth.uid()
-    )
-  );
-
--- Teachers can manage answer keys for their assignments
-CREATE POLICY "Teachers can manage answer keys for own assignments" ON answer_keys
-  FOR ALL USING (
-    assignment_id IN (
-      SELECT a.id FROM assignments a
-      JOIN classes c ON a.class_id = c.id
-      WHERE c.teacher_id = auth.uid()
-    )
-  );
-
--- Indexes for performance
-CREATE INDEX idx_classes_teacher_id ON classes(teacher_id);
-CREATE INDEX idx_students_class_id ON students(class_id);
-CREATE INDEX idx_assignments_class_id ON assignments(class_id);
-CREATE INDEX idx_submissions_assignment_id ON submissions(assignment_id);
-CREATE INDEX idx_submissions_student_id ON submissions(student_id);
-CREATE INDEX idx_submissions_status ON submissions(status);
-CREATE INDEX idx_answer_keys_assignment_id ON answer_keys(assignment_id);
+-- Create indexes for performance
+CREATE INDEX idx_students_class ON students(class_id);
+CREATE INDEX idx_communications_parent ON communications(parent_id);
+CREATE INDEX idx_communications_status ON communications(status);
+CREATE INDEX idx_quick_notes_student ON quick_notes(student_id);
